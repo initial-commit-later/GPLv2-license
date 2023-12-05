@@ -2,12 +2,14 @@
 #
 # Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
 
+WIREGUARD_VERSION = 1.0.0
+
 KERNELRELEASE ?= $(shell uname -r)
 KERNELDIR ?= /lib/modules/$(KERNELRELEASE)/build
 PREFIX ?= /usr
 DESTDIR ?=
 SRCDIR ?= $(PREFIX)/src
-DKMSDIR ?= $(SRCDIR)/wireguard
+DKMSDIR ?= $(SRCDIR)/amneziawg-$(WIREGUARD_VERSION)
 DEPMOD ?= depmod
 DEPMODBASEDIR ?= /
 
@@ -20,13 +22,11 @@ ifneq ($(V),1)
 MAKEFLAGS += --no-print-directory
 endif
 
-WIREGUARD_VERSION = $(patsubst v%,%,$(shell GIT_CEILING_DIRECTORIES="$(PWD)/../.." git describe --dirty 2>/dev/null))
-
 module:
 	@$(MAKE) -C $(KERNELDIR) M=$(PWD) WIREGUARD_VERSION="$(WIREGUARD_VERSION)" modules
 
 module-debug:
-	@$(MAKE) -C $(KERNELDIR) M=$(PWD) V=1 CONFIG_WIREGUARD_DEBUG=y WIREGUARD_VERSION="$(WIREGUARD_VERSION)" modules
+	@$(MAKE) -C $(KERNELDIR) M=$(PWD) V=1 CONFIG_AMNEZIAWG_DEBUG=y WIREGUARD_VERSION="$(WIREGUARD_VERSION)" modules
 
 clean:
 	@$(MAKE) -C $(KERNELDIR) M=$(PWD) clean
@@ -38,9 +38,12 @@ module-install:
 install: module-install
 
 rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))
-DKMS_SOURCES := version.h Makefile Kbuild Kconfig dkms.conf $(filter-out version.h wireguard.mod.c tests/%,$(call rwildcard,,*.c *.h *.S *.pl *.include))
+DKMS_SOURCES := Makefile Kbuild Kconfig dkms.conf $(call rwildcard,patches/,*.patch)
+DKMS_COMPAT_SOURCES := $(filter-out amneziawg.mod.c tests/%,$(call rwildcard,,*.c *.h *.S *.pl *.include))
 dkms-install: $(DKMS_SOURCES)
+	@$(foreach f,$(DKMS_COMPAT_SOURCES),install -v -m0644 -D $(f) $(DESTDIR)$(DKMSDIR)/original/$(f);)
 	@$(foreach f,$(DKMS_SOURCES),install -v -m0644 -D $(f) $(DESTDIR)$(DKMSDIR)/$(f);)
+	@install -v -m 0755 ../kernel-tree-scripts/prepare-sources.sh "$(DESTDIR)$(DKMSDIR)/prepare-sources.sh"
 
 style:
 	$(KERNELDIR)/scripts/checkpatch.pl -f --max-line-length=4000 --codespell --color=always $(filter-out wireguard.mod.c,$(wildcard *.c)) $(wildcard *.h) $(wildcard selftest/*.c)

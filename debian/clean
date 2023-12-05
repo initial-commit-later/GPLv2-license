@@ -1,0 +1,2 @@
+src/original/crypto/zinc/chacha20/chacha20-x86_64.S
+src/original/crypto/zinc/poly1305/poly1305-x86_64.S
