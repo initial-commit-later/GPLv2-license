@@ -490,7 +490,7 @@ int wg_device_handle_post_config(struct net_device *dev, struct amnezia_config *
 
 	if (asc->junk_packet_count < 0) {
 		net_dbg_ratelimited("%s: JunkPacketCount should be non negative\n", dev->name);
-		ret = -1;
+		ret = -EINVAL;
 	}
 
 	wg->advanced_security_config.junk_packet_count = asc->junk_packet_count;
@@ -511,12 +511,12 @@ int wg_device_handle_post_config(struct net_device *dev, struct amnezia_config *
 		net_dbg_ratelimited("%s: JunkPacketMaxSize: %d; should be smaller than maxSegmentSize: %d\n",
 							dev->name, asc->junk_packet_max_size,
 							MESSAGE_MAX_SIZE);
-		ret = -1;
+		ret = -EINVAL;
 	} else if (asc->junk_packet_max_size < asc->junk_packet_min_size) {
 		net_dbg_ratelimited("%s: maxSize: %d; should be greater than minSize: %d\n",
 							dev->name, asc->junk_packet_max_size,
 							asc->junk_packet_min_size);
-		ret = -1;
+		ret = -EINVAL;
 	} else
 		wg->advanced_security_config.junk_packet_max_size = asc->junk_packet_max_size;
 
@@ -527,7 +527,7 @@ int wg_device_handle_post_config(struct net_device *dev, struct amnezia_config *
 		net_dbg_ratelimited("%s: init header size (%d) + junkSize (%d) should be smaller than maxSegmentSize: %d\n",
 		                    dev->name, MESSAGE_INITIATION_SIZE,
 							asc->init_packet_junk_size, MESSAGE_MAX_SIZE);
-		ret = -1;
+		ret = -EINVAL;
 	} else
 		wg->advanced_security_config.init_packet_junk_size = asc->init_packet_junk_size;
 
@@ -538,7 +538,7 @@ int wg_device_handle_post_config(struct net_device *dev, struct amnezia_config *
 		net_dbg_ratelimited("%s: response header size (%d) + junkSize (%d) should be smaller than maxSegmentSize: %d\n",
 		                    dev->name, MESSAGE_RESPONSE_SIZE,
 		                    asc->response_packet_junk_size, MESSAGE_MAX_SIZE);
-		ret = -1;
+		ret = -EINVAL;
 	} else
 		wg->advanced_security_config.response_packet_junk_size = asc->response_packet_junk_size;
 
@@ -577,7 +577,7 @@ int wg_device_handle_post_config(struct net_device *dev, struct amnezia_config *
 		                    asc->response_packet_magic_header,
 							asc->cookie_packet_magic_header,
 							asc->transport_packet_magic_header);
-		ret = -1;
+		ret = -EINVAL;
 	}
 
 	if (MESSAGE_INITIATION_SIZE + asc->init_packet_junk_size == MESSAGE_RESPONSE_SIZE + asc->response_packet_junk_size) {
@@ -585,10 +585,10 @@ int wg_device_handle_post_config(struct net_device *dev, struct amnezia_config *
 		                    dev->name,
 		                    MESSAGE_INITIATION_SIZE + asc->init_packet_junk_size,
 		                    MESSAGE_RESPONSE_SIZE + asc->response_packet_junk_size);
-		ret = -1;
+		ret = -EINVAL;
 	}
 
-out:
 	wg->advanced_security_config.advanced_security_enabled = a_sec_on;
+out:
 	return ret;
 }

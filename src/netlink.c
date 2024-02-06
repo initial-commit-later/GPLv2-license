@@ -662,12 +662,9 @@ skip_set_private_key:
 				goto out;
 		}
 	}
-	ret = 0;
+	ret = wg_device_handle_post_config(wg->dev, asc);
 
 out:
-	if (!ret)
-		ret = wg_device_handle_post_config(wg->dev, asc);
-
 	mutex_unlock(&wg->device_update_lock);
 	rtnl_unlock();
 	dev_put(wg->dev);
