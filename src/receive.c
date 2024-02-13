@@ -70,7 +70,13 @@ void prepare_advanced_secured_message(struct sk_buff *skb, struct wg_device *wg)
 		if (unlikely(assumed_offset <= 0) || unlikely(!pskb_may_pull(skb, assumed_offset)))
 			return;
 
+		net_dbg_skb_ratelimited("%s: Likely received handshake packet from %pISpfsc, assuming its type %l with offset %l (current type %l)\n",
+		                        wg->dev->name, skb, assumed_type, assumed_offset, SKB_TYPE_LE32(skb));
+
 		skb_pull(skb, assumed_offset);
+
+		net_dbg_skb_ratelimited("%s: Packet from %pISpfsc real type after skb_pull %l\n",
+		                        wg->dev->name, skb, SKB_TYPE_LE32(skb));
 
 		if (SKB_TYPE_LE32(skb) != assumed_type) {
 			skb_push(skb, assumed_offset);

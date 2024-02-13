@@ -565,22 +565,23 @@ int wg_device_handle_post_config(struct net_device *dev, struct amnezia_config *
 		wg->advanced_security_config.transport_packet_magic_header = asc->transport_packet_magic_header;
 	}
 
-	if (asc->init_packet_magic_header == asc->response_packet_magic_header ||
-			asc->init_packet_magic_header == asc->cookie_packet_magic_header ||
-			asc->init_packet_magic_header == asc->transport_packet_magic_header ||
-			asc->response_packet_magic_header == asc->cookie_packet_magic_header ||
-			asc->response_packet_magic_header == asc->transport_packet_magic_header ||
-			asc->cookie_packet_magic_header == asc->transport_packet_magic_header) {
+	if (wg->advanced_security_config.init_packet_magic_header == wg->advanced_security_config.response_packet_magic_header ||
+			wg->advanced_security_config.init_packet_magic_header == wg->advanced_security_config.cookie_packet_magic_header ||
+			wg->advanced_security_config.init_packet_magic_header == wg->advanced_security_config.transport_packet_magic_header ||
+			wg->advanced_security_config.response_packet_magic_header == wg->advanced_security_config.cookie_packet_magic_header ||
+			wg->advanced_security_config.response_packet_magic_header == wg->advanced_security_config.transport_packet_magic_header ||
+			wg->advanced_security_config.cookie_packet_magic_header == wg->advanced_security_config.transport_packet_magic_header) {
 		net_dbg_ratelimited("%s: magic headers should differ; got: init:%d; recv:%d; unde:%d; tran:%d\n",
 		                    dev->name,
-							asc->init_packet_magic_header,
-		                    asc->response_packet_magic_header,
-							asc->cookie_packet_magic_header,
-							asc->transport_packet_magic_header);
+							wg->advanced_security_config.init_packet_magic_header,
+		                    wg->advanced_security_config.response_packet_magic_header,
+							wg->advanced_security_config.cookie_packet_magic_header,
+							wg->advanced_security_config.transport_packet_magic_header);
 		ret = -EINVAL;
 	}
 
-	if (MESSAGE_INITIATION_SIZE + asc->init_packet_junk_size == MESSAGE_RESPONSE_SIZE + asc->response_packet_junk_size) {
+	if (MESSAGE_INITIATION_SIZE + wg->advanced_security_config.init_packet_junk_size ==
+		MESSAGE_RESPONSE_SIZE + wg->advanced_security_config.response_packet_junk_size) {
 		net_dbg_ratelimited("%s: new init size:%d; and new response size:%d; should differ\n",
 		                    dev->name,
 		                    MESSAGE_INITIATION_SIZE + asc->init_packet_junk_size,
