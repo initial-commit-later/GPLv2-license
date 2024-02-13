@@ -7,10 +7,7 @@
   - [Debian](#debian)
   - [Linux Mint](#linux-mint)
   - [RHEL/CentOS/SUSE/Fedora Core](#rhelcentossusefedora-core)
-- [Manual installation](#manual-installation)
-  - [With DKMS on any kernel](#with-dkms-on-any-kernel)
-  - [Without DKMS on Linux kernel 3.10 - 5.5](#without-dkms-on-linux-kernel-310---55)
-  - [Without DKMS on Linux kernel 5.5+](#without-dkms-on-linux-kernel-55)
+- [Manual build](#manual-build)
 - [Troubleshooting](#troubleshooting)
 - [License](#license)
 
@@ -70,50 +67,38 @@ sudo dnf install amneziawg-dkms amneziawg-tools
 Before installation it is strictly recommended to upgrade your system kernel to the latest available version and perform
 the reboot afterwards.
 
-## Manual installation
+## Manual build
 
 You may need to install kernel headers and/or build essentials packages before running following steps.
 
-### With DKMS on any kernel
+1. In Terminal:
+    ```shell
+    git clone https://github.com/amnezia-vpn/amneziawg-linux-kernel-module.git
+    cd amneziawg-linux-kernel-module/src
+    ```
 
-Grab sources of your system's kernel by yourselves and set to `AWG_KERNEL_SOURCE_PATH` environment variable path to it. Then execute:
+2. Now, if you run modern Linux with kernel version 5.6+, you need to download your kernel's source from anywhere possible
+and link resulting tree to `kernel` symlink:
+    
+    ```shell
+    ln -s /path/to/kernel/source kernel
+    ```
+    
+    Please note to find and provide full kernel sourcetree, not only headers. **If you run on legacy kernel (<5.6), you do not need to perform this step.**
 
-```shell
-git clone https://github.com/amnezia-vpn/amneziawg-linux-kernel-module.git
-cd amneziawg-linux-kernel-module/src
-sudo make dkms-install
-sudo dkms add -m amneziawg -v 1.0.0
-sudo dkms build -m amneziawg -v 1.0.0
-sudo dkms install -m amneziawg -v 1.0.0
-```
-
-### Without DKMS on Linux kernel 3.10 - 5.5
-
-In Terminal:
-
-```shell
-git clone https://github.com/amnezia-vpn/amneziawg-linux-kernel-module.git
-cd amneziawg-linux-kernel-module/src
-make
-sudo make install
-```
-
-### Without DKMS on Linux kernel 5.5+
-
-Grab sources of your system's kernel by yourselves and apply all patches from 
-[this tree](https://github.com/amnezia-vpn/amneziawg-linux-kernel-module/tree/amnezia/src/patches)
-to WireGuard's sources in it (sources are located in `drivers/net/wireguard` subtree):
-
-```shell
-patch -F3 -t -p0 -i <patch>
-```
-
-Afterwards applying patches make and install resulting tree as usual:
-
-```shell
-make
-sudo make install
-```
+3. Now perform build and installation:
+    ```shell
+    make
+    sudo make install
+    ```
+   
+    Or on a capable system you may want to use DKMS for this:
+    ```shell
+    sudo make dkms-install
+    sudo dkms add -m amneziawg -v 1.0.0
+    sudo dkms build -m amneziawg -v 1.0.0
+    sudo dkms install -m amneziawg -v 1.0.0
+    ```
 
 ## Troubleshooting
 
@@ -134,13 +119,15 @@ This setting should persist for future and will not require repeating.
 ### Kernel sourcetree could not be found automatically
 
 In some rare cases, setup script may not find your kernel's sourcetree automatically. You may find appropriate sources by yourself
-then and point setup script to them by setting `AWG_KERNEL_SOURCE_PATH` environment variable before the installation:
+then and link them to DKMS module sources, e.g.
 
 ```shell
-export AWG_KERNEL_SOURCE_PATH="/path/to/your/kernel/sources"
+ln -s /path/to/your/kernel/sources /usr/src/amneziawg-1.0.0/kernel
 ```
 
-This setting should persist for future and will not require repeating.
+Reinstall the package thereafter and you should get everything working.
+
+Should you upgrade your kernel in the future, please remember that you may also need refresh sourcetree and update symlinks.
 
 ## License
 

@@ -22,3 +22,5 @@ src/tests/qemu/distfiles/
 .cache.mk
 src/crypto/zinc/*/*.S
 src/amneziawg.mod
+src/generated
+src/kernel
